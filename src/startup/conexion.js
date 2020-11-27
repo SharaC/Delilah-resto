@@ -1,11 +1,10 @@
 const Sequelize = require('sequelize');
 const config = require('./config');
-const {HOST, DATABASE, USER_DATABASE, PASSWORD_DATABASE } = config;
-console.log(USER_DATABASE);
+const {HOST_DATABASE, NAME_DATABASE, USER_DATABASE, PASSWORD_DATABASE } = config;
 
-const conexion = new Sequelize(DATABASE, USER_DATABASE, PASSWORD_DATABASE,
+const conexion = new Sequelize(NAME_DATABASE, USER_DATABASE, PASSWORD_DATABASE,
 {
-    host: HOST,
+    host: HOST_DATABASE,
     dialect: 'mysql'
 });
 
