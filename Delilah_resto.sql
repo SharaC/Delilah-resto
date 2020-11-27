@@ -52,6 +52,7 @@ CREATE TABLE IF NOT EXISTS   `delilah_resto`.`usuarios` (
   `telefono` VARCHAR(45) NOT NULL,
   `contrasena` VARCHAR(45) NOT NULL,
   `id_rol` INT NOT NULL,
+  UNIQUE(`usuario`),
   PRIMARY KEY (`id`),
   INDEX `fk_usuario_rol_idx` (`id_rol` ASC) VISIBLE,
   CONSTRAINT `fk_usuario_rol`
@@ -127,7 +128,7 @@ ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
 
-*************************************************************************************
+/*************************************************************************************/
 -- -----------------------------------------------------
 -- Insercion de datos de prueba
 -- -----------------------------------------------------
