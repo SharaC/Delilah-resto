@@ -1,0 +1,538 @@
+swagger: "2.0"
+info:
+  description: "API Restfull para un sistema de pedidos de comida online"
+  version: "1.0.0"
+  title: "Delilah Resto"
+  termsOfService: "http://swagger.io/terms/"
+  contact:
+    email: "shara.cadavid@gmail.com"
+  license:
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+host: "127.0.0.1:3030"
+basePath: "/v1"
+tags:
+- name: "usuarios"
+  description: "Acceso a registro de usuarios y autenticacion"
+- name: "pedidos"
+  description: "Todo sobre la informacion de los pedidos"
+- name: "productos"
+  description: "Todo sobre la informacion de los productos"
+schemes:
+- "http"
+paths:
+  /usuarios/login:
+    post:
+      tags:
+      - "usuarios"
+      summary: "Autenticación de usuarios"
+      description: "Permite el envío de crendenciales de usuario previamente registrado para realizar la autenticación"
+      operationId: "LoginUsuario"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Objeto de usuario (previamente registrado) que necesita autenticarse"
+        required: true
+        schema:
+          $ref: "#/definitions/UserLogin"
+      responses:
+        "200":
+          description: "Autenticación de usuario exitosa"
+          schema:
+            $ref: "#/definitions/UserToken"
+        "401":
+          description: "Usuario o contraseña inválidos"
+        "500":
+          description: "Error interno del servidor"
+  /usuarios/registro:
+    post:
+      tags:
+      - "usuarios"
+      summary: "Registro de nuevos usuarios"
+      description: "Se registra un nuevo usuario en el sistema"
+      operationId: "RegistroUsuarios"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Objeto de usuario que necesita registrarse"
+        required: true
+        schema:
+          $ref: "#/definitions/UserRegistro"
+      responses:
+        "200":
+          description: "usuario creado con éxito"
+        "500":
+          description: "Error interno del servidor"
+  /pedidos:
+    get:
+      tags:
+      - "pedidos"
+      summary: "Lista los pedidos existentes en el sistema"
+      description: "Para el rol administrador, permite obtener la lista de todos los pedidos existentes. Para cualquier otro rol, permite obtener la lista de los pedidos relacionados al usuario que consulta"
+      operationId: "listaPedidos"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "header"
+        name: "Authorization"
+        description: "Ejemplo: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c3VhcmlvIjoiYWRtaW4iLCJpZF91c3VhcmlvIjoxLCJyb2wiOjEsImlhdCI6MTYwNjQwOTE5NX0.k2lUWiBdOL2O9OczpgidzRilcJr4vWYxw0PK3twhbsU"
+        type: "string"
+        required: true
+      responses:
+        "200":
+          description: "operación exitosa"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/ListaPedidos"
+        "404":
+          description: "no se encontró nigún pedido"
+        "500":
+          description: "Error interno del servidor"
+      security:
+      - bearerAuth: []
+  /pedidos/pedido/{pedidoId}:
+    get:
+      tags:
+      - "pedidos"
+      summary: "Ver detalle de un pedido"
+      description: "Retorna el detalle de un pedido especificado por el id del pedido"
+      operationId: "pedidoPorID"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "header"
+        name: "Authorization"
+        description: "Ejemplo: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c3VhcmlvIjoiYWRtaW4iLCJpZF91c3VhcmlvIjoxLCJyb2wiOjEsImlhdCI6MTYwNjQwOTE5NX0.k2lUWiBdOL2O9OczpgidzRilcJr4vWYxw0PK3twhbsU"
+        type: "string"
+        required: true
+      - name: "pedidoId"
+        in: "path"
+        description: "ID del pedido a consultar"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        "200":
+          description: "operación exitosa"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/DetallePedido"
+        "404":
+          description: "no se encontró el pedido solicitado"
+        "500":
+          description: "Error interno del servidor"
+  /pedidos/nuevo-pedido:
+    post:
+      tags:
+      - "pedidos"
+      summary: "Creacion de nuevos pedidos"
+      description: "Permite crear un nuevo pedido"
+      operationId: "nuevoPedido"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "header"
+        name: "Authorization"
+        description: "Ejemplo: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c3VhcmlvIjoiYWRtaW4iLCJpZF91c3VhcmlvIjoxLCJyb2wiOjEsImlhdCI6MTYwNjQwOTE5NX0.k2lUWiBdOL2O9OczpgidzRilcJr4vWYxw0PK3twhbsU"
+        type: "string"
+        required: true
+      - name: "body"
+        in: "body"
+        description: "Objeto de pedido con la información del pedido a crear"
+        required: true
+        schema:
+          $ref: "#/definitions/PedidoNuevo"
+      responses:
+        "200":
+          description: "Se ha creado exitosamente el pedido"
+        "500":
+          description: "Error interno del servidor"
+  /pedidos/pedido:
+    put:
+      tags:
+      - "pedidos"
+      summary: "Actualiza un pedido"
+      description: "Permite actualizar el estado de un pedido especificado por su ID, pero solo para usuarios con rol de administrador"
+      operationId: "actualizaPedido"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "header"
+        name: "Authorization"
+        description: "Ejemplo: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c3VhcmlvIjoiYWRtaW4iLCJpZF91c3VhcmlvIjoxLCJyb2wiOjEsImlhdCI6MTYwNjQwOTE5NX0.k2lUWiBdOL2O9OczpgidzRilcJr4vWYxw0PK3twhbsU"
+        type: "string"
+        required: true
+      - in: "body"
+        name: "body"
+        description: "Objeto de pedido que necesita actualizarse"
+        required: true
+        schema:
+          $ref: "#/definitions/PedidoActualizar"
+      responses:
+        "200":
+          description: "El Pedido fue actualizado correctamente"
+        "400":  
+          description: "los parametros enviados para actualizar no son correctos, ningún pedido se actualizó"
+        "403":
+          description: "el usuario no tiene permisos para editar pedidos"
+        "500":
+          description: "Error interno del servidor"
+  /pedidos/pedido/{pedidoId}/confirm-delete:
+    delete:
+      tags:
+      - "pedidos"
+      summary: "elimina un pedido"
+      description: "Permite eliminar un pedido especificado por su ID, pero solo para usuarios con rol de administrador"
+      operationId: "eliminaPedido"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "header"
+        name: "Authorization"
+        description: "Ejemplo: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c3VhcmlvIjoiYWRtaW4iLCJpZF91c3VhcmlvIjoxLCJyb2wiOjEsImlhdCI6MTYwNjQwOTE5NX0.k2lUWiBdOL2O9OczpgidzRilcJr4vWYxw0PK3twhbsU"
+        type: "string"
+        required: true
+      - name: "pedidoId"
+        in: "path"
+        description: "ID del pedido a eliminar"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        "200":
+          description: "El pedido fue ELIMINADO correctamente"
+        "400":
+          description: "los parametros enviados para eliminar no son correctos, ningún pedido se eliminó"
+        "403":
+          description: "el usuario no tiene permisos para eliminar pedidos"
+        "409":
+          description: "El pedido no puede ser eliminado por que está relacionado con algún detalle de pedido en la tabla detalles_pedidos"
+        "500":
+          description: "Error interno del servidor"
+  /productos:
+    get:
+      tags:
+      - "productos"
+      summary: "Lista los productos existentes en el sistema"
+      description: "Permite obtener la lista de todos los prodcutos existentes"
+      operationId: "listaProductos"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "header"
+        name: "Authorization"
+        description: "Ejemplo: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c3VhcmlvIjoiYWRtaW4iLCJpZF91c3VhcmlvIjoxLCJyb2wiOjEsImlhdCI6MTYwNjQwOTE5NX0.k2lUWiBdOL2O9OczpgidzRilcJr4vWYxw0PK3twhbsU"
+        type: "string"
+        required: true
+      responses:
+        "200":
+          description: "operación exitosa"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/DetalleProducto"
+        "404":
+          description: "no se encontró nigún producto"
+        "500":
+          description: "Error interno del servidor"
+  /productos/producto/{productoId}:
+    get:
+      tags:
+      - "productos"
+      summary: "Ver detalle de un producto"
+      description: "Retorna el detalle de un producto especificado por el id del producto"
+      operationId: "productoPorID"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "header"
+        name: "Authorization"
+        description: "Ejemplo: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c3VhcmlvIjoiYWRtaW4iLCJpZF91c3VhcmlvIjoxLCJyb2wiOjEsImlhdCI6MTYwNjQwOTE5NX0.k2lUWiBdOL2O9OczpgidzRilcJr4vWYxw0PK3twhbsU"
+        type: "string"
+        required: true
+      - name: "productoId"
+        in: "path"
+        description: "ID del producto a consultar"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        "200":
+          description: "operación exitosa"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/DetalleProducto"
+        "404":
+          description: "no se encontró el producto solicitado"
+        "500":
+          description: "Error interno del servidor"
+  /productos/nuevo-producto:
+    post:
+      tags:
+      - "productos"
+      summary: "Creacion de nuevos productos"
+      description: "Permite crear un nuevo producto"
+      operationId: "nuevoProducto"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "header"
+        name: "Authorization"
+        description: "Ejemplo: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c3VhcmlvIjoiYWRtaW4iLCJpZF91c3VhcmlvIjoxLCJyb2wiOjEsImlhdCI6MTYwNjQwOTE5NX0.k2lUWiBdOL2O9OczpgidzRilcJr4vWYxw0PK3twhbsU"
+        type: "string"
+        required: true
+      - name: "body"
+        in: "body"
+        description: "Objeto de pedido con la información del producto a crear"
+        required: true
+        schema:
+          $ref: "#/definitions/NuevoProducto"
+      responses:
+        "200":
+          description: "Se ha creado exitosamente el producto"
+        "500":
+          description: "Error interno del servidor"
+  /productos/producto:
+    put:
+      tags:
+      - "productos"
+      summary: "Actualiza un producto"
+      description: "Permite actualizar la información de un producto especificado por su ID, pero solo para usuarios con rol de administrador"
+      operationId: "actualizaProductoo"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "header"
+        name: "Authorization"
+        description: "Ejemplo: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c3VhcmlvIjoiYWRtaW4iLCJpZF91c3VhcmlvIjoxLCJyb2wiOjEsImlhdCI6MTYwNjQwOTE5NX0.k2lUWiBdOL2O9OczpgidzRilcJr4vWYxw0PK3twhbsU"
+        type: "string"
+        required: true
+      - in: "body"
+        name: "body"
+        description: "Objeto de producto que necesita actualizarse"
+        required: true
+        schema:
+          $ref: "#/definitions/DetalleProducto"
+      responses:
+        "200":
+          description: "El producto fue actualizado correctamente"
+        "400":
+          description: "los parametros enviados para actualizar no son correctos, ningún producto se actualizó"
+        "403":
+          description: "el usuario no tiene permisos para editar productos"
+        "500":
+          description: "Error interno del servidor"
+  /productos/producto/{productoId}/confirm-delete:
+    delete:
+      tags:
+      - "productos"
+      summary: "elimina un producto"
+      description: "Permite eliminar un producto especificado por su ID, pero solo para usuarios con rol de administrador"
+      operationId: "eliminaProducto"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "header"
+        name: "Authorization"
+        description: "Ejemplo: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c3VhcmlvIjoiYWRtaW4iLCJpZF91c3VhcmlvIjoxLCJyb2wiOjEsImlhdCI6MTYwNjQwOTE5NX0.k2lUWiBdOL2O9OczpgidzRilcJr4vWYxw0PK3twhbsU"
+        type: "string"
+        required: true
+      - name: "productoId"
+        in: "path"
+        description: "ID del producto a eliminar"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        "200":
+          description: "El producto fue ELIMINADO correctamente"
+        "400":
+          description: "los parametros enviados para eliminar no son correctos, ningún producto se eliminó"
+        "403":
+          description: "el usuario no tiene permisos para eliminar productos"
+        "409":
+          description: "El producto no puede ser eliminado por que está relacionado con un pedido en la tabla detalles_pedidos"
+        "500":
+          description: "Error interno del servidor"
+securityDefinitions:
+  bearerAuth:
+      type: "apiKey"
+      in: "header"
+      name: "Authorization"
+definitions:
+  UserLogin:
+    type: "object"
+    properties:
+      user:
+        type: "string"
+        example: "admin"
+      password:
+        type: "string"
+        example: "admin123"
+  UserRegistro:
+    type: "object"
+    properties:
+      user:
+        type: "string"
+        example: "nuevousuario"
+      password:
+        type: "string"
+        example: "clave123"
+      nombre_completo: 
+        type: "string"
+        example: "Usuario Nuevo"
+      email:
+        type: "string"
+        example: "ejemplo123@gmail.com"
+      direccion_envio:
+        type: "string"
+        example: "calle linda"
+      telefono: 
+        type: "string"
+        example: "321456789"
+  UserToken:
+    type: "object"
+    properties:
+      token: 
+        type: "string"
+        example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c3VhcmlvIjoiYWRtaW4iLCJpZF91c3VhcmlvIjoxLCJyb2wiOjEsImlhdCI6MTYwNTc1NDY4Nn0.R_9HX2E5VlFZrL_IOMxMiwLAxBnUEKeQBKZmgLL0Ovo"
+  ListaPedidos:
+    type: "object"
+    properties:
+      Estado:
+        type: "string"
+        example: "NUEVO"
+      Hora:
+        type: "string"
+        example: "15:03:03"
+      Numero:
+        type: "string"
+        example: "#3"
+      Descripcion:
+        type: "string"
+        example: "3 X Hamburguesa, 1 X Pasta, 4 X Gaseosa"
+      Pago:
+        type: "integer"
+        example: 12500
+      Usuario:
+        type: "string"
+        example: "usuario1"
+      Direccion:
+        type: "string"
+        example: "Calle falsa 43"
+  DetallePedido:
+    type: "object"
+    properties:
+      Estado:
+        type: "string"
+        example: "NUEVO"
+      Hora:
+        type: "string"
+        example: "15:03:03"
+      Numero:
+        type: "string"
+        example: "#3"
+      Descripcion:
+        type: "string"
+        example: "3 X Hamburguesa, 1 X Pasta, 4 X Gaseosa"
+      Pago:
+        type: "string"
+        example: "12500"
+      Nombre:
+        type: "string"
+        example: "Juan Perez"
+      usuario:
+        type: "string"
+        example: "Juani123"
+      email:
+        type: "string"
+        example: "juani123@mail.com"
+      Direccion:
+        type: "string"
+        example: "direccion 3465"
+      telefono:
+        type: "string"
+        example: "321456789"
+      Forma_pago:
+        type: "string"
+        example: "Efectivo"
+  PedidoNuevo:
+    type: "object"
+    properties:
+      id_usuario:
+        type: "integer"
+        example: 4
+      id_tipopago:
+        type: "integer"
+        example: 2
+      detalle_pedido:
+        example: 
+         - id_producto: 4
+           cantidad: 2
+           precio_unidad: 5200 
+         - id_producto: 2
+           cantidad: 1
+           precio_unidad: 3000
+         - id_producto: 1
+           cantidad: 3
+           precio_unidad: 9000
+  PedidoActualizar:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+        example: 1
+      id_estado:
+        type: "string"
+        example: 2
+  DetalleProducto:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+        example: "1"
+      nombre:
+        type: "string"
+        example: "Hamburguesa veggie"
+      precio:
+        type: "integer"
+        example: "13000"
+      nombre_corto:
+        type: "string"
+        example: "Hamveg"
+      ruta:
+        type: "integer"
+        example: "./assets/images/products"
+      favorito:
+        type: "string"
+        example: "1"
+  NuevoProducto:
+    type: "object"
+    properties:
+      nombre:
+        type: "string"
+        example: "pizza vegetales"
+      precio:
+        type: "integer"
+        example: 8000
+      nombre_corto:
+        type: "string"
+        example: "pizzvegg"
+      ruta:
+        type: "integer"
+        example: "./assets/images/products" 
+      favorito:
+        type: "string"
+        example: "0"
+externalDocs:
+  description: "Find out more about Swagger"
+  url: "http://swagger.io"
