@@ -11,9 +11,9 @@ API Restfull para un sistema de pedidos de comida online, ofreciendo opciones pa
 ## Definición de parámetros:
 En el directorio **./src/startup** se encuentra el archivo de parámetros a configurar: **config.js**, es necesario editar los siguientes parámetros deacuerdo su configuración actual de la base de datos y servidor de Node y Express.
 ```
-- HOST: 'localhost'
+- HOST_DATABASE: 'localhost'
 - appPort: < puerto_express >
-- DATABASE: 'delilah_resto'
+- NAME_DATABASE: 'delilah_resto'
 - USER_DATABASE: < usuario >
 - PASSWORD_DATABASE: < password >
 - SECRET: < palabra de secreto para generar los tokens JWT >
